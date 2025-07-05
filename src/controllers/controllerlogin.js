@@ -28,7 +28,7 @@ const controllerlogin = {
                 }else{
                     res.json({
                         result: 'mistake',
-                        menssage: 'Contraseña incorrecta',
+                        menssage: 'access denied',
                         data: null,
                     });
                 }
@@ -46,7 +46,7 @@ const controllerlogin = {
             const token = sol.params.token;
             const decodificado = await verificarToken(token);
 
-        if (decodificado  && decodificado._id){
+        if (decodificado  && decodificado.id){
             res.json({
                 result: 'fine',
                 menssage: 'Token válido',

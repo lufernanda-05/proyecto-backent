@@ -1,6 +1,8 @@
 //el controlador depende del modelo de usuario
 import bcrypt from 'bcryptjs';// para encriptar la contrasena
 import modelusers from "../models/modelusers.js"// para poder controlar el schema de usuarios
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 const Controllerusers = {
     createUser: async(sol , res)=>{
@@ -113,5 +115,50 @@ const Controllerusers = {
         }
     }
 };
+//funcion para contraseña aleatoria
+function generarcontraseña(){
+return crypto.ramdomBytes(6).toString('hex');
+
+}
+export const forgotpasword =async (sol, res)=>{
+    try{
+        const {email}=sol.body
+        const user= await modelusers.findOne({email});
+        if (!user){
+            return res.status(404).json({message:'no se encontro el correo el correo registrado en la base de datos'})
+        }
+        const nuevapassword=generarcontraseña();
+        const hashedpassword=await bcrypt.hash(nuevapassword,10);
+        
+        user.password=hashedpassword;
+        await user.save();
+        
+        //configurar el servidor de correo
+        const transporter= nodemailer.createTransport({
+            service: 'gmail',
+            auth:{
+                user:process.env.email_node,
+            pass:process.env.pass_node
+            }
+        });
+        //contendio del correo
+        const mailoptions={
+            from: 'luisafernanda0504bernal@gmail.com',
+            to:email,
+            subject: 'recuperacion de contraseña',
+            text: 'hola ${user.name},\n\tu nueva contraseña es: ${nuevapassword}\n\recuerda actualizar tu contraseña bye.'
+        };
+        //envio de correo
+        await transporter.sendMail(mailoptions);
+
+        //responder al usuario
+        res.status(200).json({message: 'Se ha enviado una nueva contraseña al correo registrado'});
+
+    }catch(error){
+        console.error('Error al recuperar la contraseña', error);
+    res.status(500).json({message: 'Error interno en el servidor', error: error.message});
+  
+    }
+}
 
 export default Controllerusers;

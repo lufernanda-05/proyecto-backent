@@ -3,13 +3,13 @@ import modelproducts from '../models/modelproducts.js';
 const controllerproducts = {
     createProduct: async (sol, res) => {
         try {
-            const alamacenar=multer.diskStorage({
+            const almacenar=multer.diskStorage({
                 destination: 'imagenes',
                 filename: (req, file, cb) => {
                     cb(null,file.originalname);
                 },
             });
-const carga= multer({storage:alamacenar}).single('imagen');
+const carga= multer({storage:almacenar}).single('imagen');
 carga(sol,res, async (error) => {
     if (error){
         res.json({
